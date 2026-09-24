@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Event2Plan</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🎉 Event2Plan</h1>
+
+    <p class="subtitle">
+        Smart Event Planning using NLP
+    </p>
+
+    <div class="card">
+
+        <h2>Create Your Event</h2>
+
+        <p>
+            Describe your event in simple English.
+        </p>
+
+        <textarea
+            id="eventText"
+            placeholder="Example: I want to organize a birthday party for 40 people in Hyderabad with food, decorations and music">
+        </textarea>
+
+        <button onclick="generatePlan()">
+            Generate Event Plan
+        </button>
+
+        <p id="error"></p>
+
+    </div>
+
+</div>
+
+
+<script>
+
+async function generatePlan() {
+
+    const text =
+        document.getElementById("eventText").value.trim();
+
+    const error =
+        document.getElementById("error");
+
+    error.innerText = "";
+
+    if (!text) {
+
+        error.innerText =
+            "Please enter an event description.";
+
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            "http://localhost:3000/generate",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    text: text
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+
+            error.innerText =
+                data.error || "Something went wrong.";
+
+            return;
+        }
+
+        /*
+         Store NEW result.
+         This removes old/stale output.
+        */
+
+        sessionStorage.removeItem("eventPlan");
+
+        sessionStorage.setItem(
+            "eventPlan",
+            JSON.stringify(data)
+        );
+
+        window.location.href = "result.html";
+
+    } catch (err) {
+
+        console.log(err);
+
+        error.innerText =
+            "Server is not running. Start the backend first.";
+    }
+}
+
+</script>
+
+</body>
+
+</html>

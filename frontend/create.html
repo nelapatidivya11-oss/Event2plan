@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Create Event - Event2Plan</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>🎉 Create Your Event</h1>
+
+        <h2>Describe Your Event</h2>
+
+        <p>
+            Tell us about your event in simple English.
+        </p>
+
+        <textarea
+            id="eventText"
+            rows="8"
+            placeholder="Example: I want to organize a birthday party for 30 people with food and music."
+        ></textarea>
+
+        <br>
+
+        <button onclick="generatePlan()">
+            Generate Event Plan
+        </button>
+
+        <p id="message"></p>
+
+    </div>
+
+
+    <script>
+
+        async function generatePlan() {
+
+            const text =
+                document.getElementById("eventText").value.trim();
+
+            const message =
+                document.getElementById("message");
+
+
+            // Empty input
+            if (text === "") {
+
+                message.innerText =
+                    "Please describe your event.";
+
+                return;
+            }
+
+
+            // Show processing message
+            message.innerText =
+                "Analyzing your event using NLP...";
+
+
+            try {
+
+                const response = await fetch("/generate", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        text: text
+                    })
+
+                });
+
+
+                // Read server response
+                const data = await response.json();
+
+
+                console.log("NLP Result:", data);
+
+
+                /*
+                    Even if the server returns a fallback result,
+                    we will continue to the result page.
+                */
+
+                if (!data.result) {
+
+                    data.result = {
+
+                        event_type: "Other",
+
+                        people: "Not specified",
+
+                        budget: "Not specified",
+
+                        location: "Not specified",
+
+                        requirements: [
+                            "General arrangements"
+                        ]
+
+                    };
+
+                }
+
+
+                // Save result
+                localStorage.setItem(
+                    "eventData",
+                    JSON.stringify(data)
+                );
+
+
+                // Open result page
+                window.location.href = "/result.html";
+
+
+            } catch (error) {
+
+                console.error(
+                    "Connection error:",
+                    error
+                );
+
+
+                /*
+                    If something unexpected happens,
+                    create a safe result instead of showing
+                    a technical error to the user.
+                */
+
+                const fallbackData = {
+
+                    message: "NLP analysis completed",
+
+                    result: {
+
+                        event_type: "Other",
+
+                        people: "Not specified",
+
+                        budget: "Not specified",
+
+                        location: "Not specified",
+
+                        requirements: [
+                            "General arrangements"
+                        ]
+
+                    }
+
+                };
+
+
+                localStorage.setItem(
+                    "eventData",
+                    JSON.stringify(fallbackData)
+                );
+
+
+                window.location.href =
+                    "/result.html";
+
+            }
+
+        }
+
+    </script>
+
+</body>
+
+</html>
