@@ -1,232 +1,138 @@
- async function generatePlan() {
+const API_URL = "/generate";
 
-    const text = document.getElementById("eventText").value.trim();
-
-    if (!text) {
-        alert("Please describe your event first.");
-        return;
-    }
-
-    const button = document.getElementById("generateBtn");
-    const loading = document.getElementById("loading");
-    const resultSection = document.getElementById("resultSection");
-
-    button.disabled = true;
-    button.innerText = "Generating...";
-    loading.classList.remove("hidden");
-    resultSection.classList.add("hidden");
-
+function getData() {
     try {
-
-        const response = await fetch("/generate", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                text: text
-            })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok || data.error) {
-            throw new Error(data.error || "Something went wrong.");
-        }
-
-        displayPlan(data);
-
-        resultSection.classList.remove("hidden");
-
-        resultSection.scrollIntoView({
-            behavior: "smooth"
-        });
-
-    } catch (error) {
-
-        console.error(error);
-
-        alert(
-            "Unable to generate the plan.\n\n" +
-            error.message
-        );
-
-    } finally {
-
-        button.disabled = false;
-        button.innerText = "✨ Generate Complete Plan";
-        loading.classList.add("hidden");
+        return JSON.parse(localStorage.getItem("eventPlan"));
+    } catch {
+        return null;
     }
 }
 
-
-function displayPlan(data) {
-
-    document.getElementById("eventType").innerText =
-        data.event_type;
-
-    document.getElementById("people").innerText =
-        data.people;
-
-    document.getElementById("location").innerText =
-        data.location;
-
-    document.getElementById("budget").innerText =
-        formatMoney(data.budget);
-
-
-    // Requirements
-
-    const requirements =
-        document.getElementById("requirements");
-
-    requirements.innerHTML = "";
-
-    data.requirements.forEach(item => {
-
-        const tag = document.createElement("div");
-
-        tag.className = "tag";
-        tag.innerText = item;
-
-        requirements.appendChild(tag);
-    });
-
-
-    // Budget
-
-    const budgetPlan =
-        document.getElementById("budgetPlan");
-
-    budgetPlan.innerHTML = "";
-
-    Object.entries(data.budget_plan).forEach(
-        ([name, value]) => {
-
-            const item =
-                document.createElement("div");
-
-            item.className = "budget-item";
-
-            item.innerHTML = `
-                <span>${name}</span>
-                <strong>${formatMoney(value)}</strong>
-            `;
-
-            budgetPlan.appendChild(item);
-        }
-    );
-
-
-    // Menu
-
-    renderList(
-        "menu",
-        data.menu
-    );
-
-
-    // Music
-
-    renderList(
-        "music",
-        data.music_suggestions
-    );
-
-
-    // Checklist
-
-    const checklist =
-        document.getElementById("checklist");
-
-    checklist.innerHTML = "";
-
-    data.checklist.forEach(item => {
-
-        const row =
-            document.createElement("div");
-
-        row.className = "check-item";
-
-        row.innerHTML = `
-            <input type="checkbox">
-            <span>${item}</span>
-        `;
-
-        checklist.appendChild(row);
-    });
-
-
-    // Timeline
-
-    const timeline =
-        document.getElementById("timeline");
-
-    timeline.innerHTML = "";
-
-    data.timeline.forEach(item => {
-
-        const row =
-            document.createElement("div");
-
-        row.className = "timeline-item";
-
-        row.innerHTML = `
-            <div class="timeline-time">
-                ${item.time}
-            </div>
-
-            <div>
-                ${item.activity}
-            </div>
-        `;
-
-        timeline.appendChild(row);
-    });
-
-
-    // Summary
-
-    document.getElementById("summary").innerText =
-        data.summary;
-}
-
-
-function renderList(elementId, items) {
-
-    const container =
-        document.getElementById(elementId);
-
-    container.innerHTML = "";
-
-    items.forEach(item => {
-
-        const div =
-            document.createElement("div");
-
-        div.className = "list-item";
-
-        div.innerText = item;
-
-        container.appendChild(div);
-    });
-}
-
-
-function formatMoney(value) {
-
-    if (
-        value === null ||
-        value === undefined ||
-        value === "Not specified" ||
-        value === "Budget not provided"
-    ) {
-        return value;
-    }
-
+function money(value) {
     if (typeof value === "number") {
         return "₹" + value.toLocaleString("en-IN");
     }
 
+    if (value === null || value === undefined || value === "") {
+        return "Not specified";
+    }
+
     return value;
 }
+
+function createTag(text) {
+    const div = document.createElement("div");
+    div.className = "tag";
+    div.textContent = text;
+    return div;
+}
+
+function createListItem(text) {
+    const div = document.createElement("div");
+    div.className = "list-item";
+    div.textContent = "✓ " + text;
+    return div;
+}
+
+function showResult(data) {
+
+    if (!data) {
+        document.getElementById("errorBox").textContent =
+            "No event data found. Please create an event first.";
+        return;
+    }
+
+    if (data.error) {
+        document.getElementById("errorBox").textContent = data.error;
+        return;
+    }
+
+    document.getElementById("eventType").textContent =
+        data.event_type || "Not specified";
+
+    document.getElementById("people").textContent =
+        data.people || "Not specified";
+
+    document.getElementById("location").textContent =
+        data.location || "Not specified";
+
+    document.getElementById("budget").textContent =
+        money(data.budget);
+
+    const requirements = document.getElementById("requirements");
+    requirements.innerHTML = "";
+
+    (data.requirements || []).forEach(item => {
+        requirements.appendChild(createTag(item));
+    });
+
+    const budgetPlan = document.getElementById("budgetPlan");
+    budgetPlan.innerHTML = "";
+
+    if (data.budget_plan) {
+
+        Object.entries(data.budget_plan).forEach(([key, value]) => {
+
+            const div = document.createElement("div");
+            div.className = "budget-item";
+
+            div.innerHTML = `
+                <span>${key}</span>
+                <strong>${money(value)}</strong>
+            `;
+
+            budgetPlan.appendChild(div);
+        });
+    }
+
+    const menu = document.getElementById("menu");
+    menu.innerHTML = "";
+
+    (data.menu || []).forEach(item => {
+        menu.appendChild(createListItem(item));
+    });
+
+    const music = document.getElementById("music");
+    music.innerHTML = "";
+
+    (data.music_suggestions || []).forEach(item => {
+        music.appendChild(createListItem(item));
+    });
+
+    const checklist = document.getElementById("checklist");
+    checklist.innerHTML = "";
+
+    (data.checklist || []).forEach((item, index) => {
+
+        const div = document.createElement("div");
+        div.className = "check-item";
+
+        div.innerHTML = `
+            <span class="number">${index + 1}</span>
+            <span>${item}</span>
+        `;
+
+        checklist.appendChild(div);
+    });
+
+    const timeline = document.getElementById("timeline");
+    timeline.innerHTML = "";
+
+    (data.timeline || []).forEach(item => {
+
+        const div = document.createElement("div");
+        div.className = "timeline-item";
+
+        div.innerHTML = `
+            <strong>${item.time}</strong>
+            <span>${item.activity}</span>
+        `;
+
+        timeline.appendChild(div);
+    });
+
+    document.getElementById("summary").textContent =
+        data.summary || "Your event plan has been generated successfully.";
+}
+
+document.addEventListener("DOMContentLoaded", showResult);
