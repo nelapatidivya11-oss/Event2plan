@@ -1,183 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Create Event - Event2Plan</title>
-
+    <title>Event2Plan - Create Event</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <div class="container">
+<div class="container">
 
-        <h1>🎉 Create Your Event</h1>
+    <header>
+        <div class="logo">🎉</div>
+        <h1>Event2Plan</h1>
+        <p>Smart Event Planning using NLP</p>
+    </header>
 
-        <h2>Describe Your Event</h2>
+    <section class="create-box">
 
-        <p>
-            Tell us about your event in simple English.
+        <h2>Create Your Event</h2>
+
+        <p class="subtitle">
+            Describe your event in simple English.
         </p>
 
         <textarea
             id="eventText"
-            rows="8"
-            placeholder="Example: I want to organize a birthday party for 30 people with food and music."
+            placeholder="Example: I want to organize a wedding for 400 guests with a budget of 100000 in Bangalore with food, flowers, decorations, music and photography."
         ></textarea>
 
-        <br>
-
         <button onclick="generatePlan()">
-            Generate Event Plan
+            ✨ Generate Smart Event Plan
         </button>
 
-        <p id="message"></p>
+        <p id="status"></p>
 
-    </div>
+    </section>
 
+    <section class="examples">
 
-    <script>
+        <h3>💡 Try an example</h3>
 
-        async function generatePlan() {
+        <button class="example"
+            onclick="useExample('I want to organize a birthday party for 50 people in Hyderabad with a budget of 30000 with food, decorations, music and photography.')">
+            🎂 Birthday Party
+        </button>
 
-            const text =
-                document.getElementById("eventText").value.trim();
+        <button class="example"
+            onclick="useExample('I want to organize a wedding for 400 guests with 100000 budget in Bangalore with food, flowers, decorations, music and photography.')">
+            💍 Wedding
+        </button>
 
-            const message =
-                document.getElementById("message");
+        <button class="example"
+            onclick="useExample('I want to organize a corporate meeting for 60 people in Chennai with a budget of 50000 with food, projector and sound system.')">
+            💼 Corporate Meeting
+        </button>
 
+    </section>
 
-            // Empty input
-            if (text === "") {
+</div>
 
-                message.innerText =
-                    "Please describe your event.";
+<script>
 
-                return;
-            }
+async function generatePlan() {
 
+    const text = document.getElementById("eventText").value.trim();
+    const status = document.getElementById("status");
 
-            // Show processing message
-            message.innerText =
-                "Analyzing your event using NLP...";
+    if (!text) {
+        status.textContent = "Please describe your event first.";
+        return;
+    }
 
+    status.textContent = "⏳ Generating your smart event plan...";
 
-            try {
+    try {
 
-                const response = await fetch("/generate", {
+        const response = await fetch("/generate", {
 
-                    method: "POST",
+            method: "POST",
 
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+            headers: {
+                "Content-Type": "application/json"
+            },
 
-                    body: JSON.stringify({
-                        text: text
-                    })
+            body: JSON.stringify({
+                text: text
+            })
 
-                });
+        });
 
+        const data = await response.json();
 
-                // Read server response
-                const data = await response.json();
-
-
-                console.log("NLP Result:", data);
-
-
-                /*
-                    Even if the server returns a fallback result,
-                    we will continue to the result page.
-                */
-
-                if (!data.result) {
-
-                    data.result = {
-
-                        event_type: "Other",
-
-                        people: "Not specified",
-
-                        budget: "Not specified",
-
-                        location: "Not specified",
-
-                        requirements: [
-                            "General arrangements"
-                        ]
-
-                    };
-
-                }
-
-
-                // Save result
-                localStorage.setItem(
-                    "eventData",
-                    JSON.stringify(data)
-                );
-
-
-                // Open result page
-                window.location.href = "/result.html";
-
-
-            } catch (error) {
-
-                console.error(
-                    "Connection error:",
-                    error
-                );
-
-
-                /*
-                    If something unexpected happens,
-                    create a safe result instead of showing
-                    a technical error to the user.
-                */
-
-                const fallbackData = {
-
-                    message: "NLP analysis completed",
-
-                    result: {
-
-                        event_type: "Other",
-
-                        people: "Not specified",
-
-                        budget: "Not specified",
-
-                        location: "Not specified",
-
-                        requirements: [
-                            "General arrangements"
-                        ]
-
-                    }
-
-                };
-
-
-                localStorage.setItem(
-                    "eventData",
-                    JSON.stringify(fallbackData)
-                );
-
-
-                window.location.href =
-                    "/result.html";
-
-            }
-
+        if (!response.ok || data.error) {
+            throw new Error(data.error || "Unable to generate plan.");
         }
 
-    </script>
+        localStorage.setItem(
+            "eventPlan",
+            JSON.stringify(data)
+        );
+
+        window.location.href = "result.html";
+
+    } catch (error) {
+
+        status.textContent =
+            "❌ " + error.message;
+    }
+}
+
+function useExample(text) {
+    document.getElementById("eventText").value = text;
+}
+
+</script>
 
 </body>
-
 </html>
