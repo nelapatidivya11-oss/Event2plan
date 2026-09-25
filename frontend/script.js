@@ -1,29 +1,116 @@
 const API_URL = "/generate";
 
-/* =========================
-   GET SAVED EVENT DATA
-========================= */
+// ===============================
+// CREATE EVENT PAGE
+// ===============================
+
+async function generatePlan() {
+
+    const eventText = document.getElementById("eventText");
+    const button = document.getElementById("generateBtn");
+
+    if (!eventText) {
+        return;
+    }
+
+    const text = eventText.value.trim();
+
+    if (!text) {
+        alert("Please enter your event description.");
+        return;
+    }
+
+    if (button) {
+        button.disabled = true;
+        button.textContent = "Understanding your event...";
+    }
+
+    try {
+
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                text: text
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Failed to generate event plan.");
+        }
+
+        // Save NLP result
+        localStorage.setItem(
+            "eventPlan",
+            JSON.stringify(data)
+        );
+
+        // Go to result page
+        window.location.href = "result.html";
+
+    } catch (error) {
+
+        console.error("Error:", error);
+
+        alert(
+            "Unable to generate event plan.\n\n" +
+            error.message
+        );
+
+        if (button) {
+            button.disabled = false;
+            button.textContent = "✨ Generate Complete Plan";
+        }
+    }
+}
+
+
+// ===============================
+// GET SAVED DATA
+// ===============================
 
 function getData() {
+
     try {
-        return JSON.parse(localStorage.getItem("eventPlan"));
+
+        const data = localStorage.getItem("eventPlan");
+
+        if (!data) {
+            return null;
+        }
+
+        return JSON.parse(data);
+
     } catch (error) {
+
+        console.error("LocalStorage error:", error);
         return null;
     }
 }
 
 
-/* =========================
-   MONEY FORMAT
-========================= */
+// ===============================
+// MONEY FORMAT
+// ===============================
 
 function money(value) {
 
-    if (typeof value === "number") {
+    if (
+        typeof value === "number" &&
+        !isNaN(value)
+    ) {
         return "₹" + value.toLocaleString("en-IN");
     }
 
-    if (value === null || value === undefined || value === "") {
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
         return "Not specified";
     }
 
@@ -31,9 +118,9 @@ function money(value) {
 }
 
 
-/* =========================
-   CREATE TAG
-========================= */
+// ===============================
+// CREATE TAG
+// ===============================
 
 function createTag(text) {
 
@@ -47,9 +134,9 @@ function createTag(text) {
 }
 
 
-/* =========================
-   CREATE LIST ITEM
-========================= */
+// ===============================
+// CREATE LIST ITEM
+// ===============================
 
 function createListItem(text) {
 
@@ -63,107 +150,9 @@ function createListItem(text) {
 }
 
 
-/* =========================
-   GENERATE EVENT PLAN
-========================= */
-
-async function generatePlan() {
-
-    const eventTextElement =
-        document.getElementById("eventText");
-
-    if (!eventTextElement) {
-        console.error("eventText element not found");
-        return;
-    }
-
-    const text = eventTextElement.value.trim();
-
-    if (!text) {
-
-        alert("Please describe your event first.");
-
-        return;
-    }
-
-    const button =
-        document.getElementById("generateBtn");
-
-    if (button) {
-        button.disabled = true;
-        button.textContent = "Generating...";
-    }
-
-    try {
-
-        console.log("Sending request to:", API_URL);
-
-        const response = await fetch(API_URL, {
-
-            method: "POST",
-
-            headers: {
-                "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify({
-                text: text
-            })
-
-        });
-
-        console.log("Response status:", response.status);
-
-        const data = await response.json();
-
-        console.log("Server response:", data);
-
-        if (!response.ok) {
-
-            throw new Error(
-                data.error || "Failed to generate event plan."
-            );
-
-        }
-
-        /* Save result */
-
-        localStorage.setItem(
-            "eventPlan",
-            JSON.stringify(data)
-        );
-
-        /* Open result page */
-
-        window.location.href = "result.html";
-
-    } catch (error) {
-
-        console.error("Generate error:", error);
-
-        alert(
-            "Unable to generate event plan.\n\n" +
-            error.message
-        );
-
-    } finally {
-
-        if (button) {
-
-            button.disabled = false;
-
-            button.textContent =
-                "Generate Complete Plan";
-
-        }
-
-    }
-}
-
-
-/* =========================
-   SHOW RESULT
-========================= */
+// ===============================
+// SHOW RESULT
+// ===============================
 
 function showResult(data) {
 
@@ -176,12 +165,15 @@ function showResult(data) {
 
             errorBox.textContent =
                 "No event data found. Please create an event first.";
-
         }
 
         return;
     }
 
+
+    // ===============================
+    // ERROR
+    // ===============================
 
     if (data.error) {
 
@@ -189,17 +181,16 @@ function showResult(data) {
             document.getElementById("errorBox");
 
         if (errorBox) {
-
-            errorBox.textContent =
-                data.error;
-
+            errorBox.textContent = data.error;
         }
 
         return;
     }
 
 
-    /* Event Type */
+    // ===============================
+    // EVENT TYPE
+    // ===============================
 
     const eventType =
         document.getElementById("eventType");
@@ -208,11 +199,12 @@ function showResult(data) {
 
         eventType.textContent =
             data.event_type || "Not specified";
-
     }
 
 
-    /* People */
+    // ===============================
+    // PEOPLE
+    // ===============================
 
     const people =
         document.getElementById("people");
@@ -221,11 +213,12 @@ function showResult(data) {
 
         people.textContent =
             data.people || "Not specified";
-
     }
 
 
-    /* Location */
+    // ===============================
+    // LOCATION
+    // ===============================
 
     const location =
         document.getElementById("location");
@@ -234,11 +227,12 @@ function showResult(data) {
 
         location.textContent =
             data.location || "Not specified";
-
     }
 
 
-    /* Budget */
+    // ===============================
+    // BUDGET
+    // ===============================
 
     const budget =
         document.getElementById("budget");
@@ -247,11 +241,12 @@ function showResult(data) {
 
         budget.textContent =
             money(data.budget);
-
     }
 
 
-    /* Requirements */
+    // ===============================
+    // REQUIREMENTS
+    // ===============================
 
     const requirements =
         document.getElementById("requirements");
@@ -260,18 +255,23 @@ function showResult(data) {
 
         requirements.innerHTML = "";
 
-        (data.requirements || []).forEach(item => {
+        const items =
+            Array.isArray(data.requirements)
+                ? data.requirements
+                : [];
+
+        items.forEach(item => {
 
             requirements.appendChild(
                 createTag(item)
             );
-
         });
-
     }
 
 
-    /* Budget Plan */
+    // ===============================
+    // BUDGET PLAN
+    // ===============================
 
     const budgetPlan =
         document.getElementById("budgetPlan");
@@ -282,31 +282,39 @@ function showResult(data) {
 
         if (data.budget_plan) {
 
-            Object.entries(data.budget_plan).forEach(
-                ([key, value]) => {
+            Object.entries(
+                data.budget_plan
+            ).forEach(([key, value]) => {
 
-                    const div =
-                        document.createElement("div");
+                const div =
+                    document.createElement("div");
 
-                    div.className =
-                        "budget-item";
+                div.className =
+                    "budget-item";
 
-                    div.innerHTML = `
-                        <span>${key}</span>
-                        <strong>${money(value)}</strong>
-                    `;
+                const span =
+                    document.createElement("span");
 
-                    budgetPlan.appendChild(div);
+                span.textContent = key;
 
-                }
-            );
+                const strong =
+                    document.createElement("strong");
 
+                strong.textContent =
+                    money(value);
+
+                div.appendChild(span);
+                div.appendChild(strong);
+
+                budgetPlan.appendChild(div);
+            });
         }
-
     }
 
 
-    /* Menu */
+    // ===============================
+    // MENU
+    // ===============================
 
     const menu =
         document.getElementById("menu");
@@ -315,18 +323,23 @@ function showResult(data) {
 
         menu.innerHTML = "";
 
-        (data.menu || []).forEach(item => {
+        const items =
+            Array.isArray(data.menu)
+                ? data.menu
+                : [];
+
+        items.forEach(item => {
 
             menu.appendChild(
                 createListItem(item)
             );
-
         });
-
     }
 
 
-    /* Music */
+    // ===============================
+    // MUSIC
+    // ===============================
 
     const music =
         document.getElementById("music");
@@ -335,18 +348,23 @@ function showResult(data) {
 
         music.innerHTML = "";
 
-        (data.music_suggestions || []).forEach(item => {
+        const items =
+            Array.isArray(data.music_suggestions)
+                ? data.music_suggestions
+                : [];
+
+        items.forEach(item => {
 
             music.appendChild(
                 createListItem(item)
             );
-
         });
-
     }
 
 
-    /* Checklist */
+    // ===============================
+    // CHECKLIST
+    // ===============================
 
     const checklist =
         document.getElementById("checklist");
@@ -355,34 +373,44 @@ function showResult(data) {
 
         checklist.innerHTML = "";
 
-        (data.checklist || []).forEach(
-            (item, index) => {
+        const items =
+            Array.isArray(data.checklist)
+                ? data.checklist
+                : [];
 
-                const div =
-                    document.createElement("div");
+        items.forEach((item, index) => {
 
-                div.className =
-                    "check-item";
+            const div =
+                document.createElement("div");
 
-                div.innerHTML = `
-                    <span class="number">
-                        ${index + 1}
-                    </span>
+            div.className =
+                "check-item";
 
-                    <span>
-                        ${item}
-                    </span>
-                `;
+            const number =
+                document.createElement("span");
 
-                checklist.appendChild(div);
+            number.className =
+                "number";
 
-            }
-        );
+            number.textContent =
+                index + 1;
 
+            const text =
+                document.createElement("span");
+
+            text.textContent = item;
+
+            div.appendChild(number);
+            div.appendChild(text);
+
+            checklist.appendChild(div);
+        });
     }
 
 
-    /* Timeline */
+    // ===============================
+    // TIMELINE
+    // ===============================
 
     const timeline =
         document.getElementById("timeline");
@@ -391,7 +419,12 @@ function showResult(data) {
 
         timeline.innerHTML = "";
 
-        (data.timeline || []).forEach(item => {
+        const items =
+            Array.isArray(data.timeline)
+                ? data.timeline
+                : [];
+
+        items.forEach(item => {
 
             const div =
                 document.createElement("div");
@@ -399,19 +432,29 @@ function showResult(data) {
             div.className =
                 "timeline-item";
 
-            div.innerHTML = `
-                <strong>${item.time}</strong>
-                <span>${item.activity}</span>
-            `;
+            const time =
+                document.createElement("strong");
+
+            time.textContent =
+                item.time || "";
+
+            const activity =
+                document.createElement("span");
+
+            activity.textContent =
+                item.activity || "";
+
+            div.appendChild(time);
+            div.appendChild(activity);
 
             timeline.appendChild(div);
-
         });
-
     }
 
 
-    /* Summary */
+    // ===============================
+    // SUMMARY
+    // ===============================
 
     const summary =
         document.getElementById("summary");
@@ -421,32 +464,47 @@ function showResult(data) {
         summary.textContent =
             data.summary ||
             "Your event plan has been generated successfully.";
-
     }
-
 }
 
 
-/* =========================
-   PAGE LOAD
-========================= */
+// ===============================
+// PAGE LOAD
+// ===============================
 
 document.addEventListener(
     "DOMContentLoaded",
     function () {
 
-        /* Result page */
+        // Create page
+        const eventText =
+            document.getElementById("eventText");
 
-        if (
-            document.getElementById("eventType") ||
-            document.getElementById("people")
-        ) {
+        if (eventText) {
 
-            const data = getData();
+            const button =
+                document.getElementById("generateBtn");
 
-            showResult(data);
+            if (button) {
 
+                button.addEventListener(
+                    "click",
+                    generatePlan
+                );
+            }
         }
 
+
+        // Result page
+        const resultPage =
+            document.getElementById("eventType");
+
+        if (resultPage) {
+
+            const data =
+                getData();
+
+            showResult(data);
+        }
     }
 );
