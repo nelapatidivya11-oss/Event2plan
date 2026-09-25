@@ -2,123 +2,178 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>Event2Plan</title>
+    <title>Event2Plan - AI Event Planning Assistant</title>
 
     <link rel="stylesheet" href="style.css">
-
 </head>
 
 <body>
 
-<div class="container">
+    <header class="header">
+        <div>
+            <h1>Event2Plan</h1>
+            <p>AI Event Planning Assistant</p>
+        </div>
+    </header>
 
-    <h1>🎉 Event2Plan</h1>
+    <main class="container">
 
-    <p class="subtitle">
-        Smart Event Planning using NLP
-    </p>
+        <section class="hero">
+            <h2>Create Your Complete Event Plan</h2>
 
-    <div class="card">
+            <p>
+                Describe your event in simple English.
+                Event2Plan will automatically understand it and create
+                a complete event plan.
+            </p>
 
-        <h2>Create Your Event</h2>
+            <textarea
+                id="eventText"
+                placeholder="Example: I want to organize a birthday party for 30 people in Hyderabad with a budget of ₹20000. I need food, decorations, music and photography."
+            ></textarea>
 
-        <p>
-            Describe your event in simple English.
-        </p>
+            <button id="generateBtn" onclick="generatePlan()">
+                ✨ Generate Complete Plan
+            </button>
 
-        <textarea
-            id="eventText"
-            placeholder="Example: I want to organize a birthday party for 40 people in Hyderabad with food, decorations and music">
-        </textarea>
+            <div id="loading" class="loading hidden">
+                Understanding your event and creating your plan...
+            </div>
 
-        <button onclick="generatePlan()">
-            Generate Event Plan
-        </button>
-
-        <p id="error"></p>
-
-    </div>
-
-</div>
+        </section>
 
 
-<script>
+        <section id="resultSection" class="hidden">
 
-async function generatePlan() {
+            <div class="result-title">
+                <h2>Your Smart Event Plan</h2>
+                <p>Generated using Natural Language Processing</p>
+            </div>
 
-    const text =
-        document.getElementById("eventText").value.trim();
 
-    const error =
-        document.getElementById("error");
+            <!-- Event Details -->
 
-    error.innerText = "";
+            <div class="card">
 
-    if (!text) {
+                <h3>🎯 Event Details</h3>
 
-        error.innerText =
-            "Please enter an event description.";
+                <div class="details-grid">
 
-        return;
-    }
+                    <div class="detail-box">
+                        <span>Event Type</span>
+                        <strong id="eventType"></strong>
+                    </div>
 
-    try {
+                    <div class="detail-box">
+                        <span>People</span>
+                        <strong id="people"></strong>
+                    </div>
 
-        const response = await fetch(
-            "http://localhost:3000/generate",
-            {
-                method: "POST",
+                    <div class="detail-box">
+                        <span>Location</span>
+                        <strong id="location"></strong>
+                    </div>
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                    <div class="detail-box">
+                        <span>Budget</span>
+                        <strong id="budget"></strong>
+                    </div>
 
-                body: JSON.stringify({
-                    text: text
-                })
-            }
-        );
+                </div>
 
-        const data = await response.json();
+            </div>
 
-        if (!response.ok) {
 
-            error.innerText =
-                data.error || "Something went wrong.";
+            <!-- Requirements -->
 
-            return;
-        }
+            <div class="card">
 
-        /*
-         Store NEW result.
-         This removes old/stale output.
-        */
+                <h3>📋 Requirements</h3>
 
-        sessionStorage.removeItem("eventPlan");
+                <div id="requirements" class="tags"></div>
 
-        sessionStorage.setItem(
-            "eventPlan",
-            JSON.stringify(data)
-        );
+            </div>
 
-        window.location.href = "result.html";
 
-    } catch (err) {
+            <!-- Budget -->
 
-        console.log(err);
+            <div class="card">
 
-        error.innerText =
-            "Server is not running. Start the backend first.";
-    }
-}
+                <h3>💰 Smart Budget Planner</h3>
 
-</script>
+                <div id="budgetPlan" class="budget-grid"></div>
+
+            </div>
+
+
+            <!-- Menu -->
+
+            <div class="card">
+
+                <h3>🍽️ Smart Menu Suggestions</h3>
+
+                <div id="menu" class="list-grid"></div>
+
+            </div>
+
+
+            <!-- Music -->
+
+            <div class="card">
+
+                <h3>🎵 Entertainment Suggestions</h3>
+
+                <div id="music" class="list-grid"></div>
+
+            </div>
+
+
+            <!-- Checklist -->
+
+            <div class="card">
+
+                <h3>✅ Smart Event Checklist</h3>
+
+                <div id="checklist"></div>
+
+            </div>
+
+
+            <!-- Timeline -->
+
+            <div class="card">
+
+                <h3>⏰ Event Timeline</h3>
+
+                <div id="timeline"></div>
+
+            </div>
+
+
+            <!-- Summary -->
+
+            <div class="summary-card">
+
+                <h3>🤖 AI Event Summary</h3>
+
+                <p id="summary"></p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <footer>
+        <p>Event2Plan • NLP-Based Smart Event Planning Assistant</p>
+    </footer>
+
+
+    <script src="script.js"></script>
 
 </body>
 
