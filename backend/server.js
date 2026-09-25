@@ -8,6 +8,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Serve frontend
 app.use(express.static(path.join(__dirname, "../frontend")));
 
 app.get("/", (req, res) => {
@@ -18,63 +19,66 @@ app.post("/generate", (req, res) => {
 
     const text = req.body.text;
 
-    if (!text || text.trim() === "") {
+    if (!text || !text.trim()) {
         return res.status(400).json({
             error: "Please enter an event description."
         });
     }
 
-    const python = spawn("python", [
-        path.join(__dirname, "../nlp/event_nlp.py"),
-        text
+    const pythonScript = path.join(
+        __dirname,
+        "../nlp/event_nlp.py"
+    );
+
+    const pythonProcess = spawn("python", [
+        pythonScript,
+        text.trim()
     ]);
 
     let output = "";
     let errorOutput = "";
 
-    python.stdout.on("data", (data) => {
+    pythonProcess.stdout.on("data", (data) => {
         output += data.toString();
     });
 
-    python.stderr.on("data", (data) => {
+    pythonProcess.stderr.on("data", (data) => {
         errorOutput += data.toString();
     });
 
-    python.on("close", (code) => {
+    pythonProcess.on("close", (code) => {
 
         if (code !== 0) {
-
-            console.log("Python Error:");
-            console.log(errorOutput);
+            console.error(errorOutput);
 
             return res.status(500).json({
-                error: "NLP processing failed."
+                error: "NLP processing failed.",
+                details: errorOutput
             });
         }
 
         try {
-
             const result = JSON.parse(output);
 
-            console.log("NLP RESULT:");
-            console.log(result);
+            if (result.error) {
+                return res.status(500).json(result);
+            }
 
             res.json(result);
 
         } catch (error) {
-
-            console.log("Invalid Python Output:");
-            console.log(output);
+            console.error("Invalid Python output:", output);
 
             res.status(500).json({
-                error: "Could not read NLP result."
+                error: "Could not understand NLP output.",
+                raw: output
             });
         }
     });
 });
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`Event2Plan running on port ${PORT}`);
 });
-    
