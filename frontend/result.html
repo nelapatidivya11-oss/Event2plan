@@ -1,229 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>Your Event Plan - Event2Plan</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event2Plan - Smart Event Plan</title>
     <link rel="stylesheet" href="style.css">
-
 </head>
 
 <body>
 
-<div class="result-container">
+<div class="container">
 
-    <h1>🎉 Your Event Plan</h1>
+    <header>
+        <div class="logo">🎉</div>
+        <h1>Event2Plan</h1>
+        <p>Smart Event Planning using NLP</p>
+    </header>
 
-    <p class="subtitle">
-        Your event has been analyzed using NLP.
-    </p>
+    <section class="hero">
+        <h2>✨ Your Smart Event Plan</h2>
+        <p>Your event description has been analyzed using Natural Language Processing.</p>
+    </section>
 
+    <div id="errorBox" class="error"></div>
 
-    <div class="result-section">
+    <section class="cards">
 
-        <h2>📅 Event Type</h2>
+        <div class="card">
+            <h3>📅 Event Type</h3>
+            <p id="eventType">-</p>
+        </div>
 
-        <p id="eventType"></p>
+        <div class="card">
+            <h3>👥 Number of People</h3>
+            <p id="people">-</p>
+        </div>
 
-    </div>
+        <div class="card">
+            <h3>📍 Location</h3>
+            <p id="location">-</p>
+        </div>
 
+        <div class="card">
+            <h3>💰 Budget</h3>
+            <p id="budget">-</p>
+        </div>
 
-    <div class="result-section">
+    </section>
 
-        <h2>👥 Number of People</h2>
-
-        <p id="people"></p>
-
-    </div>
-
-
-    <div class="result-section">
-
-        <h2>📍 Location</h2>
-
-        <p id="location"></p>
-
-    </div>
-
-
-    <div class="result-section">
-
-        <h2>💰 Budget</h2>
-
-        <p id="budget"></p>
-
-    </div>
-
-
-    <div class="result-section">
-
+    <section class="section">
         <h2>📋 Requirements</h2>
+        <div id="requirements" class="tags"></div>
+    </section>
 
-        <ul id="requirements"></ul>
+    <section class="section">
+        <h2>💰 Smart Budget Plan</h2>
+        <div id="budgetPlan" class="budget-grid"></div>
+    </section>
 
-    </div>
-
-
-    <div class="result-section">
-
+    <section class="section">
         <h2>🍽️ Suggested Menu</h2>
+        <div id="menu" class="list-grid"></div>
+    </section>
 
-        <ul id="menu"></ul>
+    <section class="section">
+        <h2>🎵 Music & Entertainment</h2>
+        <div id="music" class="list-grid"></div>
+    </section>
 
-    </div>
-
-
-    <div class="result-section">
-
-        <h2>🎵 Music Suggestions</h2>
-
-        <ul id="music"></ul>
-
-    </div>
-
-
-    <div class="result-section">
-
-        <h2>🎈 Decoration Ideas</h2>
-
-        <ul id="decorations"></ul>
-
-    </div>
-
-
-    <div class="result-section">
-
+    <section class="section">
         <h2>✅ Event Checklist</h2>
+        <div id="checklist" class="checklist"></div>
+    </section>
 
-        <ul id="checklist"></ul>
+    <section class="section">
+        <h2>🕒 Suggested Timeline</h2>
+        <div id="timeline" class="timeline"></div>
+    </section>
 
-    </div>
+    <section class="summary">
+        <h2>🤖 NLP Planning Summary</h2>
+        <p id="summary">-</p>
+    </section>
 
-
-    <button onclick="createAnotherEvent()">
-        Create Another Event
+    <button class="back-btn" onclick="window.location.href='create.html'">
+        ← Create Another Event
     </button>
 
 </div>
 
-
-<script>
-
-const storedData =
-    sessionStorage.getItem("eventPlan");
-
-
-if (!storedData) {
-
-    alert("Please create an event first.");
-
-    window.location.href = "index.html";
-
-} else {
-
-    const data = JSON.parse(storedData);
-
-    console.log("FINAL EVENT DATA:", data);
-
-
-    document.getElementById("eventType").innerText =
-        data.event_type || "Custom Event";
-
-
-    document.getElementById("people").innerText =
-        data.people || "Not specified";
-
-
-    document.getElementById("location").innerText =
-        data.location || "Not specified";
-
-
-    document.getElementById("budget").innerText =
-        data.budget || "Not specified";
-
-
-    showList(
-        "requirements",
-        data.requirements
-    );
-
-
-    showList(
-        "menu",
-        data.menu
-    );
-
-
-    showList(
-        "music",
-        data.music
-    );
-
-
-    showList(
-        "decorations",
-        data.decorations
-    );
-
-
-    showList(
-        "checklist",
-        data.checklist
-    );
-}
-
-
-function showList(id, items) {
-
-    const list =
-        document.getElementById(id);
-
-    list.innerHTML = "";
-
-
-    if (!Array.isArray(items) ||
-        items.length === 0) {
-
-        const li =
-            document.createElement("li");
-
-        li.innerText =
-            "No suggestions available.";
-
-        list.appendChild(li);
-
-        return;
-    }
-
-
-    items.forEach(function(item) {
-
-        const li =
-            document.createElement("li");
-
-        li.innerText = item;
-
-        list.appendChild(li);
-
-    });
-}
-
-
-function createAnotherEvent() {
-
-    sessionStorage.removeItem("eventPlan");
-
-    window.location.href = "index.html";
-}
-
-</script>
+<script src="script.js"></script>
 
 </body>
-
 </html>
