@@ -3,344 +3,184 @@ import json
 import re
 
 
-# =========================================================
-# EVENT TYPE DETECTION
-# =========================================================
-
-def find_event_type(text):
-
-    t = text.lower().strip()
-
-    # Order matters: specific events first
-    if any(word in t for word in [
-        "birthday",
-        "bday",
-        "birth day",
-        "birthday party"
-    ]):
-        return "Birthday Party"
-
-    if any(word in t for word in [
-        "wedding",
-        "marriage",
-        "marry",
-        "wedding ceremony"
-    ]):
-        return "Wedding"
-
-    if any(word in t for word in [
-        "engagement",
-        "engage",
-        "engagement ceremony"
-    ]):
-        return "Engagement"
-
-    if "reception" in t:
-        return "Reception"
-
-    if "baby shower" in t:
-        return "Baby Shower"
-
-    if any(word in t for word in [
-        "anniversary",
-        "anniversary party"
-    ]):
-        return "Anniversary"
-
-    if any(word in t for word in [
-        "farewell party",
-        "farewell",
-        "send off",
-        "send-off"
-    ]):
-        return "Farewell Party"
-
-    if any(word in t for word in [
-        "welcome party",
-        "welcome event"
-    ]):
-        return "Welcome Party"
-
-    if any(word in t for word in [
-        "meeting",
-        "meetup",
-        "discussion",
-        "business meeting"
-    ]):
-        return "Meeting"
-
-    if any(word in t for word in [
-        "workshop",
-        "training",
-        "training program"
-    ]):
-        return "Workshop"
-
-    if any(word in t for word in [
-        "seminar",
-        "seminar program"
-    ]):
-        return "Seminar"
-
-    if any(word in t for word in [
-        "conference",
-        "conference meeting"
-    ]):
-        return "Conference"
-
-    if any(word in t for word in [
-        "college event",
-        "college fest",
-        "college function",
-        "college program",
-        "campus event",
-        "campus program",
-        "college celebration"
-    ]):
-        return "College Event"
-
-    if any(word in t for word in [
-        "party",
-        "celebration",
-        "celebrate",
-        "function",
-        "event"
-    ]):
-        return "Party"
-
-    return "Custom Event"
+def find_first_number(text, patterns):
+    for pattern in patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            return int(match.group(1))
+    return None
 
 
-# =========================================================
-# NUMBER OF PEOPLE
-# =========================================================
-
-def find_people(text):
-
+def detect_event_type(text):
     t = text.lower()
 
+    event_patterns = [
+        (r"\bbirthday\b|\bbday\b", "Birthday"),
+        (r"\bwedding\b|\bmarriage\b|\bshaadi\b", "Wedding"),
+        (r"\breception\b", "Reception"),
+        (r"\bengagement\b", "Engagement"),
+        (r"\banniversary\b", "Anniversary"),
+        (r"\bbaby shower\b|\bbabyshower\b", "Baby Shower"),
+        (r"\bbridal shower\b", "Bridal Shower"),
+        (r"\bparty\b|\bcelebration\b|\bcelebrate\b", "Party"),
+        (r"\bmeeting\b|\bmeetup\b", "Meeting"),
+        (r"\bconference\b", "Conference"),
+        (r"\bworkshop\b", "Workshop"),
+        (r"\bseminar\b", "Seminar"),
+        (r"\bwebinar\b", "Webinar"),
+        (r"\bfarewell\b", "Farewell"),
+        (r"\bgraduation\b|\bconvocation\b", "Graduation"),
+        (r"\bhousewarming\b|\bhouse warming\b", "Housewarming"),
+        (r"\bcorporate event\b|\bcorporate\b", "Corporate Event"),
+        (r"\bsports event\b|\bsports\b", "Sports Event"),
+        (r"\bfestival\b", "Festival"),
+    ]
+
+    for pattern, event in event_patterns:
+        if re.search(pattern, t):
+            return event
+
+    return "General Event"
+
+
+def detect_people(text):
     patterns = [
-
-        r"(\d+)\s*(?:people|persons|person|guests|guest|members|students|attendees)",
-
-        r"(?:for|with)\s*(?:around|about|nearly|approximately)?\s*(\d+)",
-
-        r"(\d+)\s*(?:of us|of people)"
+        r"for\s+(\d+)\s+(?:people|persons|guests|members)",
+        r"with\s+(\d+)\s+(?:people|persons|guests|members)",
+        r"(\d+)\s+(?:people|persons|guests|members)",
+        r"around\s+(\d+)",
+        r"about\s+(\d+)",
+        r"approximately\s+(\d+)",
+        r"attendees?\s*(?:of|:)?\s*(\d+)",
     ]
 
-    for pattern in patterns:
-
-        match = re.search(pattern, t)
-
-        if match:
-            return match.group(1)
-
-    return "Not specified"
+    return find_first_number(text, patterns)
 
 
-# =========================================================
-# BUDGET
-# =========================================================
-
-def find_budget(text):
-
-    t = text.lower()
-
+def detect_budget(text):
     patterns = [
-
-        r"(?:budget|cost|amount)\s*(?:of|is|around|about)?\s*(?:₹|rs\.?|inr)?\s*([\d,]+)",
-
-        r"(?:₹|rs\.?|inr)\s*([\d,]+)"
+        r"(?:budget|spend|spending|cost|amount)\s*(?:of|is|around|about|:)?\s*(?:₹|rs\.?|inr)?\s*([\d,]+)",
+        r"(?:₹|rs\.?|inr)\s*([\d,]+)",
+        r"([\d,]+)\s*(?:rupees|rs)\b",
     ]
 
-    for pattern in patterns:
+    value = find_first_number(text, patterns)
 
-        match = re.search(pattern, t)
+    if value:
+        return value
 
-        if match:
-            return "₹" + match.group(1)
+    return None
+
+
+def detect_location(text):
+    patterns = [
+        r"\bin\s+([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+){0,2})",
+        r"\bat\s+([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+){0,2})",
+    ]
+
+    # First try common Indian cities
+    cities = [
+        "Hyderabad", "Vijayawada", "Guntur", "Ongole",
+        "Nellore", "Kavali", "Chennai", "Bangalore",
+        "Bengaluru", "Mumbai", "Delhi", "Pune",
+        "Visakhapatnam", "Vizag", "Tirupati", "Kolkata",
+        "Kochi", "Mysore", "Mysuru", "Ahmedabad",
+        "Jaipur", "Goa"
+    ]
+
+    lower = text.lower()
+
+    for city in cities:
+        if city.lower() in lower:
+            return city
+
+    # Generic location after "in"
+    match = re.search(r"\bin\s+([A-Za-z][A-Za-z\s]{2,30})", text, re.IGNORECASE)
+
+    if match:
+        location = match.group(1).strip()
+
+        # Remove common trailing words
+        location = re.split(
+            r"\b(?:with|for|on|at|and|budget|costing|cost|under)\b",
+            location,
+            flags=re.IGNORECASE
+        )[0].strip()
+
+        if location:
+            return location.title()
 
     return "Not specified"
 
 
-# =========================================================
-# LOCATION
-# =========================================================
-
-def find_location(text):
-
-    # Common Indian cities / locations
-    locations = [
-        "Hyderabad",
-        "Bangalore",
-        "Bengaluru",
-        "Chennai",
-        "Mumbai",
-        "Delhi",
-        "Kolkata",
-        "Pune",
-        "Vijayawada",
-        "Nellore",
-        "Kavali",
-        "Tirupati",
-        "Visakhapatnam",
-        "Vizag",
-        "Guntur",
-        "Warangal",
-        "Kochi",
-        "Goa"
-    ]
-
-    for location in locations:
-
-        if re.search(
-            r"\b" + re.escape(location) + r"\b",
-            text,
-            re.IGNORECASE
-        ):
-            return location
-
-    return "Not specified"
-
-
-# =========================================================
-# REQUIREMENTS
-# =========================================================
-
-def find_requirements(text):
-
+def detect_requirements(text):
     t = text.lower()
 
     requirements = []
 
-    keywords = {
-
+    requirement_map = {
         "Food": [
-            "food",
-            "catering",
-            "meal",
-            "meals",
-            "lunch",
-            "dinner",
-            "breakfast",
-            "refreshments",
-            "menu"
+            "food", "catering", "meal", "meals",
+            "dinner", "lunch", "breakfast"
         ],
-
         "Decorations": [
-            "decoration",
-            "decorations",
-            "decor",
-            "flowers",
-            "balloons",
-            "lights",
-            "lighting"
+            "decoration", "decorations", "decor",
+            "balloons", "flowers", "stage decoration"
         ],
-
         "Music": [
-            "music",
-            "songs",
-            "song",
-            "dj",
-            "dance",
-            "sound",
-            "speaker"
+            "music", "songs", "dj", "sound system",
+            "speaker", "speakers"
         ],
-
-        "Cake": [
-            "cake"
-        ],
-
         "Photography": [
-            "photo",
-            "photos",
-            "photography",
-            "photographer",
-            "video",
-            "videography",
-            "videographer"
+            "photo", "photography", "photographer",
+            "photos", "camera"
         ],
-
+        "Videography": [
+            "video", "videography", "videographer"
+        ],
+        "Cake": [
+            "cake", "birthday cake"
+        ],
         "Venue": [
-            "venue",
-            "hall",
-            "location",
-            "auditorium",
-            "hotel",
-            "resort",
-            "place"
+            "venue", "hall", "function hall",
+            "hotel", "banquet"
         ],
-
-        "Invitation": [
-            "invitation",
-            "invitations",
-            "invite",
-            "invites"
-        ],
-
         "Games": [
-            "games",
-            "game",
-            "activities",
-            "activity"
+            "games", "game", "activities",
+            "fun activities"
         ],
-
-        "Transport": [
-            "transport",
-            "transportation",
-            "bus",
-            "vehicle",
-            "travel"
+        "Invitations": [
+            "invitation", "invitations",
+            "invite", "invites"
         ]
     }
 
-    for requirement, words in keywords.items():
-
-        for word in words:
-
-            if word in t:
+    for requirement, keywords in requirement_map.items():
+        for keyword in keywords:
+            if keyword in t:
                 requirements.append(requirement)
                 break
-
-    # Default requirements
-    if not requirements:
-
-        requirements = [
-            "Venue",
-            "Guest arrangements",
-            "Food and refreshments",
-            "Event schedule"
-        ]
 
     return requirements
 
 
-# =========================================================
-# MENU GENERATION
-# =========================================================
+def get_menu(event_type, people):
+    event = event_type.lower()
 
-def generate_menu(event_type):
-
-    if event_type == "Birthday Party":
-
-        return [
+    if "birthday" in event or "party" in event:
+        menu = [
             "Welcome Drink",
+            "Starters",
             "Veg Biryani",
             "Paneer Curry",
-            "Fried Rice",
-            "Gobi Manchurian",
-            "Salad",
+            "Dal",
+            "Rice",
             "Birthday Cake",
             "Ice Cream"
         ]
 
-    if event_type in [
-        "Wedding",
-        "Reception",
-        "Engagement"
-    ]:
-
-        return [
+    elif "wedding" in event or "reception" in event:
+        menu = [
             "Welcome Drink",
             "Starters",
             "Veg Biryani",
@@ -352,373 +192,220 @@ def generate_menu(event_type):
             "Ice Cream"
         ]
 
-    if event_type == "Baby Shower":
-
-        return [
-            "Welcome Drink",
-            "Snacks",
-            "Vegetable Biryani",
-            "Paneer Curry",
-            "Fruits",
-            "Sweet",
-            "Cake"
-        ]
-
-    if event_type == "Anniversary":
-
-        return [
-            "Welcome Drink",
-            "Starters",
-            "Biryani",
-            "Paneer Curry",
-            "Fried Rice",
-            "Salad",
-            "Cake",
-            "Ice Cream"
-        ]
-
-    if event_type == "Farewell Party":
-
-        return [
-            "Welcome Drink",
-            "Snacks",
-            "Starters",
-            "Biryani",
-            "Main Course",
-            "Dessert",
-            "Ice Cream"
-        ]
-
-    if event_type in [
-        "Meeting",
-        "Workshop",
-        "Seminar",
-        "Conference"
-    ]:
-
-        return [
+    elif "meeting" in event or "conference" in event or "seminar" in event:
+        menu = [
             "Tea",
             "Coffee",
             "Biscuits",
             "Snacks",
-            "Lunch",
-            "Fruit Juice"
+            "Lunch"
         ]
 
-    if event_type == "College Event":
-
-        return [
-            "Welcome Drink",
+    elif "workshop" in event:
+        menu = [
+            "Tea",
+            "Coffee",
             "Snacks",
-            "Veg Biryani",
-            "Fried Rice",
-            "Paneer Curry",
-            "Soft Drinks",
-            "Ice Cream"
+            "Lunch",
+            "Water"
         ]
 
-    return [
-        "Welcome Drink",
-        "Starters",
-        "Main Course",
-        "Rice/Biryani",
-        "Dessert",
-        "Ice Cream"
-    ]
-
-
-# =========================================================
-# MUSIC GENERATION
-# =========================================================
-
-def generate_music(event_type):
-
-    if event_type == "Birthday Party":
-
-        return [
-            "Birthday Celebration Songs",
-            "Popular Party Songs",
-            "Dance Music",
-            "DJ Party Mix"
+    else:
+        menu = [
+            "Welcome Drink",
+            "Starters",
+            "Main Course",
+            "Dessert"
         ]
 
-    if event_type in [
-        "Wedding",
-        "Reception",
-        "Engagement"
-    ]:
+    return menu
 
+
+def get_music(event_type):
+    event = event_type.lower()
+
+    if "birthday" in event:
         return [
-            "Wedding Entry Music",
-            "Romantic Songs",
-            "Traditional Music",
-            "Dance Songs"
-        ]
-
-    if event_type == "Baby Shower":
-
-        return [
-            "Soft Celebration Music",
-            "Family Songs",
-            "Happy Background Music"
-        ]
-
-    if event_type == "Anniversary":
-
-        return [
-            "Romantic Songs",
-            "Couple Celebration Songs",
-            "Soft Background Music",
-            "Dance Music"
-        ]
-
-    if event_type == "Farewell Party":
-
-        return [
-            "Farewell Songs",
-            "Friendship Songs",
-            "Memories Songs",
-            "Dance Music"
-        ]
-
-    if event_type == "College Event":
-
-        return [
-            "Popular Songs",
+            "Birthday Playlist",
             "DJ Music",
-            "Dance Music",
-            "College Celebration Songs"
+            "Dance Songs",
+            "Fun Games"
         ]
 
-    if event_type in [
-        "Meeting",
-        "Workshop",
-        "Seminar",
-        "Conference"
-    ]:
+    if "wedding" in event or "reception" in event:
+        return [
+            "Wedding Songs",
+            "DJ",
+            "Traditional Music",
+            "Dance Performance"
+        ]
 
+    if "meeting" in event or "conference" in event:
         return [
             "Soft Background Music",
-            "Instrumental Music"
+            "Presentation Audio"
+        ]
+
+    if "workshop" in event or "seminar" in event:
+        return [
+            "Soft Background Music",
+            "Presentation Audio"
         ]
 
     return [
-        "Popular Songs",
         "Background Music",
-        "Celebration Music"
+        "DJ / Playlist",
+        "Fun Activities"
     ]
 
 
-# =========================================================
-# DECORATION GENERATION
-# =========================================================
-
-def generate_decorations(event_type):
-
-    if event_type == "Birthday Party":
-
-        return [
-            "Balloons",
-            "Event Banner",
-            "Colorful Lights",
-            "Photo Booth",
-            "Table Decorations"
-        ]
-
-    if event_type in [
-        "Wedding",
-        "Reception",
-        "Engagement"
-    ]:
-
-        return [
-            "Flower Decorations",
-            "Stage Decoration",
-            "Fairy Lights",
-            "Entrance Decoration",
-            "Table Decorations"
-        ]
-
-    if event_type == "Baby Shower":
-
-        return [
-            "Baby Theme Decorations",
-            "Balloons",
-            "Flower Decorations",
-            "Photo Booth",
-            "Welcome Board"
-        ]
-
-    if event_type == "Anniversary":
-
-        return [
-            "Flower Decorations",
-            "Romantic Lights",
-            "Photo Wall",
-            "Table Decorations",
-            "Welcome Board"
-        ]
-
-    if event_type == "Farewell Party":
-
-        return [
-            "Farewell Banner",
-            "Photo Wall",
-            "Balloons",
-            "Memory Board",
-            "Stage Decoration"
-        ]
-
-    if event_type == "College Event":
-
-        return [
-            "College Banner",
-            "Stage Setup",
-            "Colorful Lights",
-            "Photo Booth",
-            "Entrance Decoration"
-        ]
-
-    if event_type in [
-        "Meeting",
-        "Workshop",
-        "Seminar",
-        "Conference"
-    ]:
-
-        return [
-            "Stage Setup",
-            "Event Banner",
-            "Lighting",
-            "Seating Arrangement"
-        ]
-
-    return [
-        "Balloons",
-        "Lights",
-        "Event Banner",
-        "Table Decorations",
-        "Entrance Decoration"
-    ]
-
-
-# =========================================================
-# CHECKLIST
-# =========================================================
-
-def generate_checklist(requirements):
-
+def get_checklist(event_type, requirements):
     checklist = [
         "Finalize event date and time",
-        "Confirm venue",
-        "Prepare guest list"
+        "Confirm guest list",
+        "Select and book venue"
     ]
 
     if "Food" in requirements:
-
-        checklist.append(
-            "Arrange food and catering"
-        )
+        checklist.append("Arrange food and catering")
 
     if "Decorations" in requirements:
-
-        checklist.append(
-            "Arrange decorations"
-        )
+        checklist.append("Arrange decorations")
 
     if "Music" in requirements:
-
-        checklist.append(
-            "Arrange music and sound system"
-        )
+        checklist.append("Arrange music and sound system")
 
     if "Photography" in requirements:
+        checklist.append("Book photographer")
 
-        checklist.append(
-            "Arrange photography and videography"
-        )
+    if "Videography" in requirements:
+        checklist.append("Arrange videography")
 
-    if "Invitation" in requirements:
+    if "Cake" in requirements:
+        checklist.append("Order the cake")
 
-        checklist.append(
-            "Send invitations"
-        )
+    if "Invitations" in requirements:
+        checklist.append("Send invitations")
 
     if "Games" in requirements:
+        checklist.append("Prepare games and activities")
 
-        checklist.append(
-            "Prepare games and activities"
-        )
-
-    if "Transport" in requirements:
-
-        checklist.append(
-            "Arrange transportation"
-        )
-
-    checklist.append(
-        "Confirm all arrangements before the event"
-    )
+    checklist.append("Final event setup and verification")
 
     return checklist
 
 
-# =========================================================
-# MAIN EVENT ANALYSIS
-# =========================================================
+def get_timeline(event_type):
+    event = event_type.lower()
 
-def analyze_event(text):
+    if "meeting" in event or "conference" in event or "seminar" in event:
+        return [
+            {"time": "09:00 AM", "activity": "Guest Arrival & Registration"},
+            {"time": "09:30 AM", "activity": "Welcome & Introduction"},
+            {"time": "10:00 AM", "activity": "Main Session"},
+            {"time": "11:30 AM", "activity": "Break"},
+            {"time": "12:00 PM", "activity": "Discussion / Activities"},
+            {"time": "01:00 PM", "activity": "Lunch & Closing"}
+        ]
 
-    event_type = find_event_type(text)
+    return [
+        {"time": "05:00 PM", "activity": "Guest Arrival"},
+        {"time": "05:30 PM", "activity": "Welcome"},
+        {"time": "06:00 PM", "activity": "Main Event Activity"},
+        {"time": "07:00 PM", "activity": "Food & Refreshments"},
+        {"time": "08:00 PM", "activity": "Music & Entertainment"},
+        {"time": "09:00 PM", "activity": "Closing"}
+    ]
 
-    people = find_people(text)
 
-    budget = find_budget(text)
+def get_budget_plan(budget, event_type):
+    if not budget:
+        return {
+            "Food": "Not specified",
+            "Decorations": "Not specified",
+            "Music": "Not specified",
+            "Venue": "Not specified",
+            "Photography": "Not specified",
+            "Other": "Not specified",
+            "Total": "Budget not provided"
+        }
 
-    location = find_location(text)
+    food = round(budget * 0.35)
+    decorations = round(budget * 0.15)
+    music = round(budget * 0.10)
+    venue = round(budget * 0.20)
+    photography = round(budget * 0.10)
+    other = budget - (
+        food + decorations + music + venue + photography
+    )
 
-    requirements = find_requirements(text)
-
-    result = {
-
-        "event_type": event_type,
-
-        "people": people,
-
-        "budget": budget,
-
-        "location": location,
-
-        "requirements": requirements,
-
-        "menu": generate_menu(event_type),
-
-        "music": generate_music(event_type),
-
-        "decorations": generate_decorations(event_type),
-
-        "checklist": generate_checklist(requirements)
+    return {
+        "Food": food,
+        "Decorations": decorations,
+        "Music": music,
+        "Venue": venue,
+        "Photography": photography,
+        "Other": other,
+        "Total": budget
     }
 
-    return result
 
+def generate_plan(text):
+    event_type = detect_event_type(text)
+    people = detect_people(text)
+    budget = detect_budget(text)
+    location = detect_location(text)
+    requirements = detect_requirements(text)
 
-# =========================================================
-# PROGRAM START
-# =========================================================
+    if not requirements:
+        requirements = ["General Arrangements"]
+
+    menu = get_menu(event_type, people)
+    music = get_music(event_type)
+    checklist = get_checklist(event_type, requirements)
+    timeline = get_timeline(event_type)
+    budget_plan = get_budget_plan(budget, event_type)
+
+    if people:
+        people_text = str(people)
+    else:
+        people_text = "Not specified"
+
+    return {
+        "event_type": event_type,
+        "people": people_text,
+        "location": location,
+        "budget": budget if budget else "Not specified",
+        "requirements": requirements,
+        "budget_plan": budget_plan,
+        "menu": menu,
+        "music_suggestions": music,
+        "checklist": checklist,
+        "timeline": timeline,
+        "summary": (
+            f"Your {event_type.lower()} is planned for "
+            f"{people_text} people in {location}. "
+            f"The application generated a budget plan, menu, "
+            f"entertainment suggestions, checklist and timeline."
+        )
+    }
+
 
 if __name__ == "__main__":
+    try:
+        if len(sys.argv) < 2:
+            print(json.dumps({
+                "error": "Please provide an event description."
+            }))
+            sys.exit(0)
 
-    if len(sys.argv) < 2:
+        text = " ".join(sys.argv[1:]).strip()
 
+        result = generate_plan(text)
+
+        print(json.dumps(result))
+
+    except Exception as e:
         print(json.dumps({
-            "error": "Please provide an event description."
+            "error": str(e)
         }))
-
-        sys.exit(1)
-
-    text = " ".join(sys.argv[1:])
-
-    result = analyze_event(text)
-
-    print(json.dumps(result))
