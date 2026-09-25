@@ -1,60 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Event2Plan - Smart Event Planner</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <div class="logo">🎉</div>
+
+        <h1>Event2Plan</h1>
+
+        <p>
+            Smart Event Planning using Natural Language Processing
+        </p>
+    </header>
+
+
+    <section class="create-box">
+
+        <h2>Create Your Complete Event Plan</h2>
+
+        <p class="subtitle">
+            Describe your event in simple English.
+            Event2Plan will understand it and create a smart plan.
+        </p>
+
+
+        <textarea
+            id="eventText"
+            placeholder="Example: I want to organize a wedding for 400 guests with a budget of 100000 in Bangalore with food, flowers, decorations, music and photography."
+        ></textarea>
+
+
+        <button
+            id="generateBtn"
+            onclick="generatePlan()"
+        >
+            ✨ Generate Complete Plan
+        </button>
+
+
+        <p id="status"></p>
+
+    </section>
+
+
+    <section class="examples">
+
+        <h3>💡 Try an example</h3>
+
+
+        <button
+            class="example"
+            onclick="useExample('I want to organize a birthday party for 50 people in Hyderabad with a budget of 30000 with food, decorations, music and photography.')"
+        >
+            🎂 Birthday Party
+        </button>
+
+
+        <button
+            class="example"
+            onclick="useExample('I want to organize a wedding for 400 guests with 100000 budget in Bangalore with food, flowers, decorations, music and photography.')"
+        >
+            💍 Wedding
+        </button>
+
+
+        <button
+            class="example"
+            onclick="useExample('I want to organize a corporate meeting for 60 people in Chennai with a budget of 50000 with food, projector and sound system.')"
+        >
+            💼 Corporate Meeting
+        </button>
+
+
+        <button
+            class="example"
+            onclick="useExample('I want to organize a college cultural fest for 500 students in Hyderabad with a budget of 80000 with stage, music, food, lighting and entertainment.')"
+        >
+            🎓 College Event
+        </button>
+
+    </section>
+
+</div>
+
+
 <script>
 
 async function generatePlan() {
 
-    const text = document.getElementById("eventText").value.trim();
-    const status = document.getElementById("status");
+    const text =
+        document.getElementById("eventText").value.trim();
+
+    const status =
+        document.getElementById("status");
+
+    const button =
+        document.getElementById("generateBtn");
+
 
     if (!text) {
-        status.textContent = "Please describe your event first.";
+
+        status.textContent =
+            "Please describe your event first.";
+
         return;
     }
 
-    status.textContent = "⏳ Generating your smart event plan...";
+
+    status.textContent =
+        "⏳ Understanding your event and creating a smart plan...";
+
+    button.disabled = true;
+
 
     try {
 
         const response = await fetch("/generate", {
+
             method: "POST",
+
             headers: {
                 "Content-Type": "application/json"
             },
+
             body: JSON.stringify({
                 text: text
             })
+
         });
 
-        const data = await response.json();
 
-        console.log("Backend response:", data);
+        const data =
+            await response.json();
 
-        if (!response.ok) {
-            throw new Error(data.error || "Server error");
+
+        if (!response.ok || data.error) {
+
+            throw new Error(
+                data.error ||
+                "Unable to generate event plan."
+            );
         }
 
-        if (data.error) {
-            throw new Error(data.error);
-        }
 
-        localStorage.setItem("eventPlan", JSON.stringify(data));
+        localStorage.setItem(
+            "eventPlan",
+            JSON.stringify(data)
+        );
 
-        status.textContent = "✅ Event plan generated successfully!";
 
-        setTimeout(() => {
-            window.location.href = "/result.html";
-        }, 500);
+        window.location.href =
+            "result.html";
+
 
     } catch (error) {
 
-        console.error("Generate error:", error);
+        console.error(error);
 
-        status.textContent = "❌ " + error.message;
+        status.textContent =
+            "❌ " + error.message;
+
+        button.disabled = false;
     }
 }
 
 
 function useExample(text) {
-    document.getElementById("eventText").value = text;
+
+    document.getElementById(
+        "eventText"
+    ).value = text;
+
 }
 
 </script>
+
+</body>
+</html>
