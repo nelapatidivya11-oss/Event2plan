@@ -1,150 +1,130 @@
 * {
     box-sizing: border-box;
-    margin: 0;
-    padding: 0;
 }
 
 body {
+    margin: 0;
     font-family: Arial, sans-serif;
-    background: #f5f3ff;
-    color: #25213b;
-}
-
-.header {
-    background: linear-gradient(135deg, #6d28d9, #9333ea);
-    color: white;
-    padding: 25px 8%;
-}
-
-.header h1 {
-    font-size: 32px;
-}
-
-.header p {
-    margin-top: 5px;
-    opacity: 0.9;
+    background: linear-gradient(135deg, #eef2ff, #f5f3ff);
+    color: #222;
 }
 
 .container {
-    width: 90%;
-    max-width: 1100px;
-    margin: 40px auto;
+    width: 92%;
+    max-width: 1000px;
+    margin: 35px auto;
 }
 
-.hero {
-    background: white;
-    padding: 35px;
-    border-radius: 20px;
-    box-shadow: 0 10px 35px rgba(60, 40, 100, 0.12);
+header {
     text-align: center;
+    padding: 25px;
 }
 
-.hero h2 {
-    font-size: 30px;
-    margin-bottom: 12px;
+.logo {
+    font-size: 42px;
 }
 
-.hero p {
+header h1 {
+    margin: 5px 0;
+    font-size: 38px;
+}
+
+header p {
     color: #666;
-    margin-bottom: 25px;
-    line-height: 1.6;
+    font-size: 17px;
+}
+
+.create-box,
+.section,
+.summary {
+    background: white;
+    border-radius: 18px;
+    padding: 28px;
+    margin: 22px 0;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+.create-box h2 {
+    font-size: 30px;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    color: #666;
 }
 
 textarea {
     width: 100%;
-    min-height: 150px;
+    min-height: 180px;
     padding: 18px;
-    border: 2px solid #ddd6fe;
-    border-radius: 14px;
-    resize: vertical;
+    margin-top: 15px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
     font-size: 16px;
-    outline: none;
-}
-
-textarea:focus {
-    border-color: #7c3aed;
+    resize: vertical;
 }
 
 button {
-    margin-top: 20px;
-    padding: 15px 30px;
+    width: 100%;
     border: none;
     border-radius: 12px;
-    background: linear-gradient(135deg, #7c3aed, #9333ea);
+    padding: 16px;
+    margin-top: 15px;
+    background: #4f46e5;
     color: white;
-    font-size: 16px;
+    font-size: 17px;
     font-weight: bold;
     cursor: pointer;
 }
 
 button:hover {
-    transform: translateY(-1px);
+    opacity: 0.9;
 }
 
-.loading {
-    margin-top: 20px;
-    color: #6d28d9;
-    font-weight: bold;
-}
-
-.hidden {
-    display: none;
-}
-
-#resultSection {
-    margin-top: 35px;
-}
-
-.result-title {
-    text-align: center;
-    margin-bottom: 25px;
-}
-
-.result-title h2 {
-    font-size: 28px;
-}
-
-.result-title p {
-    color: #666;
-    margin-top: 7px;
-}
-
-.card,
-.summary-card {
+.examples {
     background: white;
-    padding: 28px;
-    margin-bottom: 22px;
+    padding: 25px;
     border-radius: 18px;
-    box-shadow: 0 7px 25px rgba(60, 40, 100, 0.08);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
 }
 
-.card h3,
-.summary-card h3 {
-    margin-bottom: 20px;
-    color: #5b21b6;
+.example {
+    background: #f3f4ff;
+    color: #333;
+    border: 1px solid #ddd;
 }
 
-.details-grid {
+#status {
+    text-align: center;
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+.hero {
+    text-align: center;
+    padding: 15px;
+}
+
+.cards {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
 }
 
-.detail-box {
-    background: #f5f3ff;
-    padding: 18px;
-    border-radius: 12px;
+.card {
+    background: white;
+    padding: 25px;
+    border-radius: 18px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
 }
 
-.detail-box span {
-    display: block;
-    color: #777;
-    font-size: 13px;
-    margin-bottom: 8px;
+.card h3 {
+    margin-top: 0;
 }
 
-.detail-box strong {
-    font-size: 18px;
+.card p {
+    font-size: 20px;
+    font-weight: bold;
 }
 
 .tags {
@@ -155,7 +135,6 @@ button:hover {
 
 .tag {
     background: #ede9fe;
-    color: #5b21b6;
     padding: 10px 15px;
     border-radius: 20px;
     font-weight: bold;
@@ -163,26 +142,16 @@ button:hover {
 
 .budget-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
 }
 
 .budget-item {
-    background: #faf5ff;
-    border: 1px solid #e9d5ff;
-    padding: 18px;
+    padding: 16px;
+    background: #f8fafc;
     border-radius: 12px;
-}
-
-.budget-item span {
-    display: block;
-    color: #777;
-    margin-bottom: 8px;
-}
-
-.budget-item strong {
-    font-size: 20px;
-    color: #6d28d9;
+    display: flex;
+    justify-content: space-between;
 }
 
 .list-grid {
@@ -193,90 +162,67 @@ button:hover {
 
 .list-item {
     padding: 15px;
-    background: #f8f7ff;
-    border-radius: 10px;
-    border-left: 4px solid #7c3aed;
+    background: #f8fafc;
+    border-radius: 12px;
 }
 
 .check-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 13px;
-    margin-bottom: 10px;
-    background: #fafafa;
-    border-radius: 10px;
+    gap: 15px;
+    padding: 14px;
+    margin: 10px 0;
+    background: #f8fafc;
+    border-radius: 12px;
 }
 
-.check-item input {
-    width: 18px;
-    height: 18px;
+.number {
+    min-width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #4f46e5;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .timeline-item {
     display: flex;
     gap: 20px;
-    padding: 15px;
-    border-left: 3px solid #7c3aed;
-    margin-left: 10px;
-    margin-bottom: 10px;
-    background: #faf7ff;
-    border-radius: 0 10px 10px 0;
+    padding: 16px;
+    border-left: 4px solid #4f46e5;
+    margin: 10px 0;
+    background: #f8fafc;
 }
 
-.timeline-time {
-    min-width: 90px;
-    font-weight: bold;
-    color: #6d28d9;
+.timeline-item strong {
+    min-width: 100px;
 }
 
-.summary-card {
-    background: linear-gradient(135deg, #6d28d9, #9333ea);
-    color: white;
+.summary {
+    background: #eef2ff;
 }
 
-.summary-card h3 {
-    color: white;
+.back-btn {
+    margin-bottom: 40px;
 }
 
-.summary-card p {
-    line-height: 1.7;
-}
-
-footer {
+.error {
+    color: #dc2626;
     text-align: center;
-    padding: 30px;
-    color: #777;
+    font-weight: bold;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 700px) {
 
-    .details-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .budget-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 550px) {
-
-    .container {
-        width: 94%;
-    }
-
-    .hero {
-        padding: 22px;
-    }
-
-    .hero h2 {
-        font-size: 24px;
-    }
-
-    .details-grid,
+    .cards,
     .budget-grid,
     .list-grid {
         grid-template-columns: 1fr;
+    }
+
+    header h1 {
+        font-size: 30px;
     }
 }
